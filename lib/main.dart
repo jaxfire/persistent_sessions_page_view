@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:page_view/pages.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const MyApp());
+const String pageIndexKey = 'pageIndex';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+
+  final SharedPreferences prefs = await _prefs;
+  final int pageIndex = prefs.getInt(pageIndexKey) ?? 0;
+
+  print('Retreived pageIndex from SharedPrefs: $pageIndex');
+
+  runApp(MyApp(pageIndex: pageIndex));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  final int pageIndex;
+  const MyApp({Key? key, required this.pageIndex}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -14,26 +28,36 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
+      home: MyHomePage(pageIndex: pageIndex),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+  final int pageIndex;
+  const MyHomePage({Key? key, required this.pageIndex}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyHomePage> createState() {
+    return _MyHomePageState();
+  }
 }
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentPageIndex = 0;
 
-  String title = 'TODO: Update me';
+  late PageController _controller;
 
-  final PageController _controller = PageController(
-    initialPage: 0,
-  );
+  @override
+  void initState() {
+    _currentPageIndex = widget.pageIndex;
+    _controller = PageController(
+      initialPage: widget.pageIndex,
+    );
+    super.initState();
+  }
+
+  String title = 'TODO: Update me';
 
   @override
   Widget build(BuildContext context) {
@@ -52,11 +76,15 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentPageIndex,
-        onTap: (newIndex) {
+        onTap: (newIndex) async {
+          final SharedPreferences _prefs =
+              await SharedPreferences.getInstance();
+          _prefs.setInt(pageIndexKey, newIndex);
           _controller.jumpToPage(newIndex);
           setState(() {
             _currentPageIndex = newIndex;
           });
+          // TODO: Persist in shared_prefs
         },
         items: const [
           BottomNavigationBarItem(
@@ -73,39 +101,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class Page1 extends StatelessWidget {
-  const Page1({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Page 1'),
-    );
-  }
-}
-
-class Page2 extends StatelessWidget {
-  const Page2({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Page 2'),
-    );
-  }
-}
-
-class Page3 extends StatelessWidget {
-  const Page3({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Page 3'),
     );
   }
 }
