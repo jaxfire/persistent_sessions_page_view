@@ -14,14 +14,13 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-  final String title;
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -29,6 +28,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentPageIndex = 0;
+
+  String title = 'TODO: Update me';
 
   final PageController _controller = PageController(
     initialPage: 0,
@@ -38,7 +39,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(title),
       ),
       body: PageView(
         physics: const NeverScrollableScrollPhysics(),
@@ -52,11 +53,9 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentPageIndex,
         onTap: (newIndex) {
+          _controller.jumpToPage(newIndex);
           setState(() {
             _currentPageIndex = newIndex;
-            // _controller.jumpTo(value);
-            _controller.jumpToPage(newIndex);
-            // _controller.animateToPage(newIndex, duration: const Duration(milliseconds: 200), curve: Curve())
           });
         },
         items: const [
